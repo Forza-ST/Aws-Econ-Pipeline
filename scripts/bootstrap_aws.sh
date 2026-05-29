@@ -9,7 +9,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 REGION="us-east-1"
 PROJECT="econ-pipeline"
 ENVIRONMENT="${1:-dev}"
-GITHUB_ORG="CloudTechLive"
+GITHUB_ORG="Forza-ST"
 REPO_NAME="aws-econ-pipeline"
 
 echo "Bootstrapping AWS for: $PROJECT/$ENVIRONMENT in $ACCOUNT_ID/$REGION"
