@@ -1,0 +1,7 @@
+# Copy to backend.hcl — this file is git-ignored
+# Create the S3 bucket and DynamoDB table manually first (see docs/setup.md)
+bucket         = "econ-pipeline-tfstate-dev-YOURACCOUNT"
+key            = "econ-pipeline/dev/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "econ-pipeline-tfstate-lock"
+encrypt        = true

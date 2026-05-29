@@ -1,0 +1,20 @@
+# Gitleaks configuration — tune what counts as a secret leak
+title = "Econ Pipeline Gitleaks Config"
+
+[allowlist]
+  description = "Allowlist"
+  paths = [
+    ".env.example",
+    "terraform.tfvars.example",
+    "backend.hcl.example",
+    "docs/",
+    "tests/fixtures/",
+    "CURSOR_INSTRUCTIONS.md"
+  ]
+  # Ignore placeholder strings that look like secrets but are examples
+  regexes = [
+    "CHANGE_ME",
+    "your_.*_here",
+    "123456789012",    # placeholder AWS account ID
+    "YOUR/WEBHOOK/URL"
+  ]

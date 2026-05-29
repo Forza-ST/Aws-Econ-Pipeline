@@ -1,0 +1,10 @@
+# ── Development + CI dependencies ────────────────────────────────────────
+-r requirements.txt
+pytest>=7.4.0
+pytest-cov>=4.1.0
+moto[s3,lambda,secretsmanager]>=4.2.0   # AWS mocking for tests
+ruff>=0.1.0
+black>=23.0.0
+pip-audit>=2.6.0
+nbstripout>=0.7.0    # strips notebook outputs before commit
+pre-commit>=3.5.0

@@ -1,0 +1,68 @@
+# ── Deploy Pipeline: runs on merge to main only ────────────────────────────
+name: Deploy — Terraform + Lambda Package
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: dev
+        type: choice
+        options: [dev, prod]
+
+permissions:
+  contents: read
+  id-token: write   # required for OIDC (no long-lived AWS keys stored in GitHub)
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'dev' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}  # uses GitHub Environments for approval gates
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # OIDC-based auth — no AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY stored in GitHub
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+          role-session-name: github-actions-deploy
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      # Package Lambda functions (zip only changed ones)
+      - name: Package Lambda collectors
+        run: |
+          cd src/collectors
+          pip install -r requirements.txt -t package/
+          cp *.py package/
+          cd package && zip -r ../../../lambda_collectors.zip . -x "*.pyc" -x "__pycache__/*"
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        run: |
+          cd infrastructure/terraform/environments/${{ github.event.inputs.environment || 'dev' }}
+          terraform init
+
+      - name: Terraform Plan
+        run: |
+          cd infrastructure/terraform/environments/${{ github.event.inputs.environment || 'dev' }}
+          terraform plan -out=tfplan -var="lambda_zip_path=../../../../lambda_collectors.zip"
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd infrastructure/terraform/environments/${{ github.event.inputs.environment || 'dev' }}
+          terraform apply -auto-approve tfplan
