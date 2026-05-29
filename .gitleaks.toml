@@ -9,7 +9,7 @@ title = "Econ Pipeline Gitleaks Config"
     "backend.hcl.example",
     "docs/",
     "tests/fixtures/",
-    "CURSOR_INSTRUCTIONS.md"
+    "SETUP.md"
   ]
   # Ignore placeholder strings that look like secrets but are examples
   regexes = [

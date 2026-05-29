@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aws-Econ-Pipeline — Architecture</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --accent: #3b82f6;
+      --accent2: #10b981;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #1e3a5f 0%, var(--bg) 60%);
+    }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.75rem; }
+    header p { margin: 0; color: var(--muted); }
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 2rem 0;
+      flex-wrap: wrap;
+    }
+    .tabs button {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .tabs button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    main { padding: 1.5rem 2rem 3rem; max-width: 1200px; margin: 0 auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .layers {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .layer {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+    .layer:hover { border-color: var(--accent); }
+    .layer.selected { border-color: var(--accent2); box-shadow: 0 0 0 2px rgba(16,185,129,0.25); }
+    .layer h3 { margin: 0 0 0.35rem; font-size: 1rem; color: var(--accent2); }
+    .layer p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+    .detail {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      min-height: 180px;
+    }
+    .detail h2 { margin-top: 0; font-size: 1.2rem; }
+    .detail ul { padding-left: 1.25rem; }
+    .detail .talking-point {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(59,130,246,0.12);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      font-size: 0.9rem;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--accent2); }
+    .total { font-weight: 700; color: var(--accent2); }
+    .flow {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .flow-step {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .flow-step strong { color: var(--accent); }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Aws-Econ-Pipeline</h1>
+    <p>Interactive architecture · ~$2.33/month demo · Jedi-Master AWS account</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" class="active" data-tab="arch">Architecture</button>
+    <button type="button" data-tab="cost">Cost Breakdown</button>
+    <button type="button" data-tab="cicd">GitHub &amp; CI/CD</button>
+  </nav>
+
+  <main>
+    <section id="arch" class="panel active">
+      <div class="layers" id="layers"></div>
+      <div class="detail" id="detail">
+        <h2>Select a layer</h2>
+        <p>Click any pipeline layer to view technologies, design notes, and interview talking points.</p>
+      </div>
+    </section>
+
+    <section id="cost" class="panel">
+      <h2>Dev / Demo Monthly Cost</h2>
+      <table>
+        <thead><tr><th>Service</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Lambda (collectors + ML)</td><td>$0.00 — free tier</td></tr>
+          <tr><td>S3 (3 zones, ~500MB)</td><td>$0.01</td></tr>
+          <tr><td>Glue Python Shell</td><td>$1.47</td></tr>
+          <tr><td>Glue Crawler</td><td>$0.44</td></tr>
+          <tr><td>Secrets Manager</td><td>$0.40</td></tr>
+          <tr><td>Athena</td><td>$0.00</td></tr>
+          <tr><td>EventBridge / SQS / CloudWatch</td><td>$0.00</td></tr>
+          <tr><td>GitHub Actions</td><td>$0.00</td></tr>
+          <tr><td class="total">Total</td><td class="total">~$2.33/month</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--muted);margin-top:1rem">
+        Production swaps: Redshift (~$180/mo) and MWAA (~$360/mo) replace Athena + scheduled Lambda in dev.
+      </p>
+    </section>
+
+    <section id="cicd" class="panel">
+      <h2>GitHub &amp; CI/CD</h2>
+      <div class="flow">
+        <div class="flow-step"><strong>Push / PR</strong> → triggers <code>ci.yml</code>: Gitleaks, Ruff/Black, pytest+moto, Terraform validate, pip-audit.</div>
+        <div class="flow-step"><strong>Merge to main</strong> → <code>deploy.yml</code> assumes IAM role via OIDC (<code>AWS_DEPLOY_ROLE_ARN</code>), packages Lambda, <code>terraform apply</code>.</div>
+        <div class="flow-step"><strong>Secrets</strong> — API keys in AWS Secrets Manager only; GitHub stores OIDC role ARN, not AWS access keys.</div>
+        <div class="flow-step"><strong>Repo</strong> — <a href="https://github.com/Forza-ST/Aws-Econ-Pipeline">Forza-ST/Aws-Econ-Pipeline</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="https://github.com/Forza-ST/Aws-Econ-Pipeline">Repository</a> ·
+    Hosted on GitHub Pages
+  </footer>
+
+  <script>
+    const layers = [
+      {
+        id: 1,
+        title: "Layer 1 — Data Sources",
+        summary: "FRED · BLS · yfinance · EIA · Census · open.er-api",
+        tech: ["FRED API", "BLS API", "yfinance", "open.er-api.com"],
+        rationale: "Public macro and market data with free tiers; immutable raw capture preserves API evolution.",
+        interview: "I treat APIs as unreliable upstreams — collectors are idempotent and write versioned JSON to S3 with partition keys by source and date."
+      },
+      {
+        id: 2,
+        title: "Layer 2 — Ingestion & Orchestration",
+        summary: "Lambda collectors · EventBridge · Airflow DAG · SQS DLQ",
+        tech: ["AWS Lambda", "EventBridge (disabled in dev)", "Airflow DAG config", "SQS DLQ"],
+        rationale: "Serverless ingestion avoids MWAA cost in demo; EventBridge rules ship disabled to prevent surprise spend.",
+        interview: "Scheduled Lambda replaces MWAA for demo (~$2/mo vs ~$360/mo) while keeping the same orchestration contract in the DAG definition."
+      },
+      {
+        id: 3,
+        title: "Layer 3 — Data Lake",
+        summary: "Bronze → Silver → Gold on S3 + Glue Catalog",
+        tech: ["S3 raw/clean/curated", "SSE-S3", "public access block", "Glue Catalog"],
+        rationale: "Medallion layout separates immutable bronze from analytics-ready Parquet silver and curated gold.",
+        interview: "Bronze is append-only event sourcing — if a BLS field appears later, I replay raw files through an updated transform."
+      },
+      {
+        id: 4,
+        title: "Layer 4 — Transform & Quality",
+        summary: "Glue Python Shell · Great Expectations · Athena external tables",
+        tech: ["Glue Python Shell", "PyArrow/Parquet", "Great Expectations checkpoints", "Athena"],
+        rationale: "Python Shell is ~6× cheaper than PySpark for this volume; GE gates bad data before gold zone.",
+        interview: "Expectation suites encode domain rules — CPI 0–500, unemployment 1–30% — halting the pipeline before bad data reaches analysts."
+      },
+      {
+        id: 5,
+        title: "Layer 5 — AI / ML",
+        summary: "Prophet forecasts · correlation matrix · anomaly hooks",
+        tech: ["Prophet", "pandas/scipy", "S3 curated outputs", "Bedrock RAG (roadmap)"],
+        rationale: "Lightweight ML on Lambda/Glue avoids SageMaker baseline cost for portfolio demo.",
+        interview: "Forecasts and correlations land as Parquet in curated zone — same schema whether served by Athena or Redshift."
+      },
+      {
+        id: 6,
+        title: "Layer 6 — Query Layer",
+        summary: "Athena workgroup (dev) · Redshift star schema (prod)",
+        tech: ["Athena", "Presto SQL", "External tables on Parquet", "Redshift (prod path)"],
+        rationale: "Pay-per-query Athena with 1GB scan cap replaces Redshift in dev.",
+        interview: "Window functions compute YoY CPI in SQL — no pre-materialized deltas, flexible for any period comparison."
+      },
+      {
+        id: 7,
+        title: "Layer 7 — Serving & Alerting",
+        summary: "QuickSight · Grafana · API Gateway · SNS",
+        tech: ["QuickSight", "Grafana", "API Gateway", "CloudWatch alarms", "SNS"],
+        rationale: "Decouple serving from storage — dashboards read curated zone via Athena or Redshift.",
+        interview: "Serving layer is pluggable; the lake contract stays stable when swapping BI tools or warehouses."
+      }
+    ];
+
+    const layersEl = document.getElementById("layers");
+    const detailEl = document.getElementById("detail");
+
+    function showLayer(layer) {
+      document.querySelectorAll(".layer").forEach((el) => el.classList.remove("selected"));
+      const node = document.querySelector(`[data-id="${layer.id}"]`);
+      if (node) node.classList.add("selected");
+      detailEl.innerHTML = `
+        <h2>${layer.title}</h2>
+        <p><strong>Stack:</strong> ${layer.tech.join(" · ")}</p>
+        <p>${layer.rationale}</p>
+        <div class="talking-point"><strong>Interview:</strong> ${layer.interview}</div>
+      `;
+    }
+
+    layers.forEach((layer) => {
+      const div = document.createElement("div");
+      div.className = "layer";
+      div.dataset.id = layer.id;
+      div.innerHTML = `<h3>${layer.title}</h3><p>${layer.summary}</p>`;
+      div.addEventListener("click", () => showLayer(layer));
+      layersEl.appendChild(div);
+    });
+    showLayer(layers[0]);
+
+    document.querySelectorAll(".tabs button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>

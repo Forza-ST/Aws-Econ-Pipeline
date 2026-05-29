@@ -10,7 +10,7 @@ REGION="us-east-1"
 PROJECT="econ-pipeline"
 ENVIRONMENT="${1:-dev}"
 GITHUB_ORG="Forza-ST"
-REPO_NAME="aws-econ-pipeline"
+REPO_NAME="Aws-Econ-Pipeline"
 
 echo "Bootstrapping AWS for: $PROJECT/$ENVIRONMENT in $ACCOUNT_ID/$REGION"
 

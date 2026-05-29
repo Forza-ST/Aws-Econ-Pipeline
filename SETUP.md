@@ -1,5 +1,5 @@
-# AWS Economic Analysis Pipeline — Cursor Implementation Guide
-**Repo:** CloudTechLive/aws-econ-pipeline
+# AWS Economic Analysis Pipeline — Setup Guide
+**Repo:** Forza-ST/Aws-Econ-Pipeline
 **Local path:** `C:\Users\ForzaPC2\Documents\Projects\Job-Prep-Projects\AI-Data-Architect-Project`
 
 ---
@@ -30,9 +30,9 @@ git --version          # 2.x
 ```
 
 ### Step 1: Create the GitHub repo
-1. Go to https://github.com/CloudTechLive
+1. Go to https://github.com/Forza-ST
 2. Click **New repository**
-3. Name it: `aws-econ-pipeline`
+3. Name it: `Aws-Econ-Pipeline`
 4. Set to **Public**
 5. **Do NOT** initialize with README (we'll push from local)
 6. Click **Create repository**
@@ -43,7 +43,7 @@ cd "C:\Users\ForzaPC2\Documents\Projects\Job-Prep-Projects\AI-Data-Architect-Pro
 
 # Initialize git in THIS folder (which already has all the code)
 git init
-git remote add origin https://github.com/CloudTechLive/aws-econ-pipeline.git
+git remote add origin https://github.com/Forza-ST/Aws-Econ-Pipeline.git
 
 # CRITICAL: verify .gitignore is in place before first commit
 cat .gitignore   # should show long list of ignored patterns
@@ -71,7 +71,7 @@ pre-commit install     # installs pre-commit hooks
 ### Step 5: Create your .env file
 ```powershell
 copy .env.example .env
-# Then open .env in Cursor and fill in your values
+# Then open .env in your IDE and fill in your values
 # .env is in .gitignore — it will NEVER be committed
 ```
 
@@ -90,7 +90,7 @@ git push -u origin main
 ```
 
 **After pushing:**
-1. Go to https://github.com/CloudTechLive/aws-econ-pipeline/actions
+1. Go to https://github.com/Forza-ST/Aws-Econ-Pipeline/actions
 2. You should see the **CI** workflow start automatically
 3. The **Secret Scan (Gitleaks)** job runs first — verify it passes
 4. **Terraform Validate** will run but pass with `-backend=false` (no state bucket needed yet)
@@ -163,16 +163,16 @@ bash scripts/setup_secrets.sh dev
 # Copy and fill in tfvars
 cd infrastructure\terraform\environments\dev
 copy terraform.tfvars.example terraform.tfvars
-# Open terraform.tfvars in Cursor — it's git-ignored
+# Open terraform.tfvars in your IDE — it's git-ignored
 # Fill in lambda_zip_path (leave default for now)
 
 # Copy backend config
 copy backend.hcl.example backend.hcl
-# Open backend.hcl in Cursor
+# Open backend.hcl in your IDE
 # Fill in the state bucket name from the bootstrap script output
 ```
 
-**In Cursor, open `backend.hcl` and update:**
+**In your IDE, open `backend.hcl` and update:**
 ```hcl
 bucket         = "econ-pipeline-tfstate-dev-YOUR_ACCOUNT_ID"
 key            = "econ-pipeline/dev/terraform.tfstate"
@@ -348,7 +348,7 @@ git push origin main
 ```
 
 **Watch the GitHub Actions run:**
-1. Go to https://github.com/CloudTechLive/aws-econ-pipeline/actions
+1. Go to https://github.com/Forza-ST/Aws-Econ-Pipeline/actions
 2. You should see both **CI** and **Deploy** workflows trigger
 3. CI: secret scan → lint → test → terraform validate
 4. Deploy: OIDC auth → package Lambda → terraform plan → terraform apply
