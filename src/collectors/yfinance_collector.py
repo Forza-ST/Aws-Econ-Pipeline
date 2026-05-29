@@ -5,6 +5,7 @@ Uses yfinance (free, no API key needed).
 IMPORTANT: yfinance uses Yahoo Finance's unofficial API.
 For production, replace with Bloomberg/Refinitiv. For demo, this is fine.
 """
+
 import logging
 import os
 import sys
@@ -18,16 +19,16 @@ from utils.aws_helpers import write_to_raw_zone
 logger = logging.getLogger(__name__)
 
 TICKERS = {
-    "^GSPC":  "S&P 500 Index",
-    "^IXIC":  "NASDAQ Composite",
-    "^DJI":   "Dow Jones Industrial Average",
-    "^VIX":   "CBOE Volatility Index",
-    "GC=F":   "Gold Futures (front month)",
-    "CL=F":   "WTI Crude Oil Futures",
-    "SI=F":   "Silver Futures",
-    "BZ=F":   "Brent Crude Oil Futures",
+    "^GSPC": "S&P 500 Index",
+    "^IXIC": "NASDAQ Composite",
+    "^DJI": "Dow Jones Industrial Average",
+    "^VIX": "CBOE Volatility Index",
+    "GC=F": "Gold Futures (front month)",
+    "CL=F": "WTI Crude Oil Futures",
+    "SI=F": "Silver Futures",
+    "BZ=F": "Brent Crude Oil Futures",
     "DX-Y.NYB": "US Dollar Index (DXY)",
-    "^TNX":   "10-Year Treasury Yield",
+    "^TNX": "10-Year Treasury Yield",
 }
 
 
@@ -40,7 +41,9 @@ def fetch_ticker(symbol: str, period_days: int = 5) -> dict:
     start = end - timedelta(days=period_days)
 
     ticker = yf.Ticker(symbol)
-    hist = ticker.history(start=start.strftime("%Y-%m-%d"), end=end.strftime("%Y-%m-%d"))
+    hist = ticker.history(
+        start=start.strftime("%Y-%m-%d"), end=end.strftime("%Y-%m-%d")
+    )
 
     if hist.empty:
         raise ValueError(f"No data returned for {symbol}")

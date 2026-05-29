@@ -8,6 +8,7 @@ Transforms:
 - Type casting, deduplication
 - Partition by source/year/month
 """
+
 import sys
 import json
 import logging
@@ -23,30 +24,40 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # Injected by Glue at runtime — not hardcoded
-RAW_BUCKET   = sys.argv[sys.argv.index("--raw_bucket") + 1]   if "--raw_bucket"   in sys.argv else ""
-CLEAN_BUCKET = sys.argv[sys.argv.index("--clean_bucket") + 1] if "--clean_bucket" in sys.argv else ""
+RAW_BUCKET = (
+    sys.argv[sys.argv.index("--raw_bucket") + 1] if "--raw_bucket" in sys.argv else ""
+)
+CLEAN_BUCKET = (
+    sys.argv[sys.argv.index("--clean_bucket") + 1]
+    if "--clean_bucket" in sys.argv
+    else ""
+)
 
 s3 = boto3.client("s3")
 
 
-FRED_SCHEMA = pa.schema([
-    pa.field("series_id",       pa.string()),
-    pa.field("observation_date",pa.date32()),
-    pa.field("value",           pa.float64()),
-    pa.field("vintage_date",    pa.date32()),   # when we collected it
-    pa.field("source",          pa.string()),
-])
+FRED_SCHEMA = pa.schema(
+    [
+        pa.field("series_id", pa.string()),
+        pa.field("observation_date", pa.date32()),
+        pa.field("value", pa.float64()),
+        pa.field("vintage_date", pa.date32()),  # when we collected it
+        pa.field("source", pa.string()),
+    ]
+)
 
-MARKET_SCHEMA = pa.schema([
-    pa.field("symbol",          pa.string()),
-    pa.field("date",            pa.date32()),
-    pa.field("open",            pa.float64()),
-    pa.field("high",            pa.float64()),
-    pa.field("low",             pa.float64()),
-    pa.field("close",           pa.float64()),
-    pa.field("volume",          pa.int64()),
-    pa.field("source",          pa.string()),
-])
+MARKET_SCHEMA = pa.schema(
+    [
+        pa.field("symbol", pa.string()),
+        pa.field("date", pa.date32()),
+        pa.field("open", pa.float64()),
+        pa.field("high", pa.float64()),
+        pa.field("low", pa.float64()),
+        pa.field("close", pa.float64()),
+        pa.field("volume", pa.int64()),
+        pa.field("source", pa.string()),
+    ]
+)
 
 
 def list_raw_files(source: str, date_prefix: str) -> list[str]:
@@ -68,15 +79,17 @@ def transform_fred(raw: dict) -> pd.DataFrame:
     observations = raw.get("data", {}).get("observations", [])
     rows = []
     for obs in observations:
-        if obs.get("value") == ".":   # FRED uses "." for missing
+        if obs.get("value") == ".":  # FRED uses "." for missing
             continue
-        rows.append({
-            "series_id":        raw.get("data", {}).get("series_id", ""),
-            "observation_date": obs["date"],
-            "value":            float(obs["value"]),
-            "vintage_date":     raw.get("ingested_at", "")[:10],
-            "source":           "fred",
-        })
+        rows.append(
+            {
+                "series_id": raw.get("data", {}).get("series_id", ""),
+                "observation_date": obs["date"],
+                "value": float(obs["value"]),
+                "vintage_date": raw.get("ingested_at", "")[:10],
+                "source": "fred",
+            }
+        )
     return pd.DataFrame(rows)
 
 
@@ -86,8 +99,16 @@ def transform_market(raw: dict) -> pd.DataFrame:
     df = pd.DataFrame(observations)
     if df.empty:
         return df
-    df = df.rename(columns={"Date": "date", "Open": "open", "High": "high",
-                             "Low": "low", "Close": "close", "Volume": "volume"})
+    df = df.rename(
+        columns={
+            "Date": "date",
+            "Open": "open",
+            "High": "high",
+            "Low": "low",
+            "Close": "close",
+            "Volume": "volume",
+        }
+    )
     df["symbol"] = raw.get("data", {}).get("symbol", "")
     df["source"] = "yfinance"
     df["date"] = pd.to_datetime(df["date"]).dt.date

@@ -5,7 +5,7 @@ Rate limit: 500 queries/day with key, 25 without
 
 Series collected: Unemployment (U-3, U-6), Non-Farm Payrolls, PPI, ECI
 """
-import json
+
 import logging
 import os
 import sys
@@ -21,20 +21,21 @@ BLS_API_URL = "https://api.bls.gov/publicAPI/v2/timeseries/data/"
 
 SERIES_GROUPS = {
     "unemployment": ["LNS14000000", "LNS13327709"],  # U-3, U-6
-    "payrolls":     ["CES0000000001"],                 # Total Nonfarm
-    "ppi":          ["WPSFD4"],                        # PPI Finished Goods
-    "eci":          ["CIU2010000000000A"],             # Employment Cost Index
+    "payrolls": ["CES0000000001"],  # Total Nonfarm
+    "ppi": ["WPSFD4"],  # PPI Finished Goods
+    "eci": ["CIU2010000000000A"],  # Employment Cost Index
 }
 
 
 def fetch_series_batch(series_ids: list[str], api_key: str) -> dict:
     """BLS v2 accepts up to 50 series per request — batch for efficiency."""
     from datetime import datetime
+
     current_year = datetime.now().year
     payload = {
-        "seriesid":  series_ids,
+        "seriesid": series_ids,
         "startyear": str(current_year - 2),
-        "endyear":   str(current_year),
+        "endyear": str(current_year),
         "registrationkey": api_key,
     }
     resp = requests.post(BLS_API_URL, json=payload, timeout=30)
@@ -62,4 +63,8 @@ def lambda_handler(event: dict, context) -> dict:
             logger.error(f"✗ {group_name}: {e}")
             errors.append({"group": group_name, "error": str(e)})
 
-    return {"statusCode": 200 if not errors else 207, "collected": len(results), "errors": len(errors)}
+    return {
+        "statusCode": 200 if not errors else 207,
+        "collected": len(results),
+        "errors": len(errors),
+    }

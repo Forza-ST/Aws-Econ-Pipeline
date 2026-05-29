@@ -41,11 +41,12 @@ module "data_lake" {
 
 # ── Lambda Collectors (free tier: 1M requests/month) ─────────────────────
 module "collectors" {
-  source          = "../../modules/lambda"
-  environment     = var.environment
-  project         = var.project
-  lambda_zip_path = var.lambda_zip_path
-  s3_bucket_raw   = module.data_lake.raw_bucket_name
+  source            = "../../modules/lambda"
+  environment       = var.environment
+  project           = var.project
+  lambda_zip_path   = var.lambda_zip_path
+  s3_bucket_raw     = module.data_lake.raw_bucket_name
+  s3_bucket_raw_arn = module.data_lake.raw_bucket_arn
 
   # Secrets pulled from AWS Secrets Manager — not passed as env vars
   secrets_manager_arns = [
@@ -65,7 +66,7 @@ module "glue" {
 # ── Secrets Manager — stores all API keys ────────────────────────────────
 resource "aws_secretsmanager_secret" "api_keys" {
   name                    = "${var.project}/${var.environment}/api-keys"
-  recovery_window_in_days = 0  # immediate delete ok for dev
+  recovery_window_in_days = 0 # immediate delete ok for dev
 
   # Actual values set via: aws secretsmanager put-secret-value
   # NEVER put real keys in Terraform files
@@ -75,14 +76,14 @@ resource "aws_secretsmanager_secret" "api_keys" {
 resource "aws_cloudwatch_event_rule" "daily_ingest" {
   name                = "${var.project}-${var.environment}-daily-ingest"
   description         = "Trigger daily market data collectors"
-  schedule_expression = "cron(0 22 ? * MON-FRI *)"  # 5pm ET close
-  state               = "DISABLED"  # enable manually when testing to avoid costs
+  schedule_expression = "cron(0 22 ? * MON-FRI *)" # 5pm ET close
+  state               = "DISABLED"                 # enable manually when testing to avoid costs
 }
 
 resource "aws_cloudwatch_event_rule" "monthly_macro" {
   name                = "${var.project}-${var.environment}-monthly-macro"
   description         = "Trigger FRED/BLS macro data collectors"
-  schedule_expression = "cron(0 15 15 * ? *)"  # 15th of each month
+  schedule_expression = "cron(0 15 15 * ? *)" # 15th of each month
   state               = "DISABLED"
 }
 

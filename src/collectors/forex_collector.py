@@ -3,10 +3,14 @@ Forex & USD Index Collector
 Free tier: https://open.er-api.com/v6/latest/USD (no key needed for basic)
 Paid: https://exchangeratesapi.io (key needed for history)
 """
-import logging, os, sys
+
+import logging
+import os
+import sys
 import requests
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from utils.aws_helpers import get_api_keys, write_to_raw_zone
+from utils.aws_helpers import write_to_raw_zone
 
 logger = logging.getLogger(__name__)
 

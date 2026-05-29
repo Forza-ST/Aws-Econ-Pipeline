@@ -16,7 +16,7 @@ resource "aws_s3_bucket" "lake" {
   bucket   = each.value
 
   lifecycle {
-    prevent_destroy = false  # set true in prod
+    prevent_destroy = false # set true in prod
   }
 }
 
@@ -31,7 +31,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "lake" {
   bucket   = each.value.id
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"  # SSE-S3, free — SSE-KMS costs $1/10k requests
+      sse_algorithm = "AES256" # SSE-S3, free — SSE-KMS costs $1/10k requests
     }
   }
 }
@@ -54,9 +54,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "raw_expire" {
     filter { prefix = "" }
     transition {
       days          = 30
-      storage_class = "STANDARD_IA"   # 30 days → cheaper tier
+      storage_class = "STANDARD_IA" # 30 days → cheaper tier
     }
-    expiration { days = 90 }          # delete after 90 days in dev
+    expiration { days = 90 } # delete after 90 days in dev
   }
 }
 
@@ -68,9 +68,9 @@ resource "aws_s3_bucket_logging" "lake" {
   target_prefix = "${each.key}/"
 }
 
-output "raw_bucket_name"     { value = aws_s3_bucket.lake["raw"].id }
-output "clean_bucket_name"   { value = aws_s3_bucket.lake["clean"].id }
+output "raw_bucket_name" { value = aws_s3_bucket.lake["raw"].id }
+output "clean_bucket_name" { value = aws_s3_bucket.lake["clean"].id }
 output "curated_bucket_name" { value = aws_s3_bucket.lake["curated"].id }
-output "raw_bucket_arn"      { value = aws_s3_bucket.lake["raw"].arn }
-output "clean_bucket_arn"    { value = aws_s3_bucket.lake["clean"].arn }
-output "curated_bucket_arn"  { value = aws_s3_bucket.lake["curated"].arn }
+output "raw_bucket_arn" { value = aws_s3_bucket.lake["raw"].arn }
+output "clean_bucket_arn" { value = aws_s3_bucket.lake["clean"].arn }
+output "curated_bucket_arn" { value = aws_s3_bucket.lake["curated"].arn }

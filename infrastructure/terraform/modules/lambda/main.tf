@@ -26,7 +26,7 @@ resource "aws_iam_role_policy" "lambda_s3" {
         # Least privilege: write to raw bucket only, specific prefix
         Effect   = "Allow"
         Action   = ["s3:PutObject", "s3:GetObject"]
-        Resource = "${var.s3_bucket_raw_arn}/raw/*"
+        Resource = "${local.s3_bucket_raw_arn}/raw/*"
       },
       {
         # Read secrets — only the api-keys secret
@@ -46,12 +46,13 @@ resource "aws_iam_role_policy" "lambda_s3" {
 
 # One Lambda per data source — isolated failure domains
 locals {
+  s3_bucket_raw_arn = var.s3_bucket_raw_arn != "" ? var.s3_bucket_raw_arn : "arn:aws:s3:::${var.s3_bucket_raw}"
+
   collectors = {
-    fred        = { handler = "fred_collector.lambda_handler",        timeout = 60,  memory = 128 }
-    bls         = { handler = "bls_collector.lambda_handler",         timeout = 60,  memory = 128 }
-    yfinance    = { handler = "yfinance_collector.lambda_handler",    timeout = 120, memory = 256 }
-    commodities = { handler = "commodities_collector.lambda_handler", timeout = 60,  memory = 128 }
-    forex       = { handler = "forex_collector.lambda_handler",       timeout = 30,  memory = 128 }
+    fred     = { handler = "fred_collector.lambda_handler", timeout = 60, memory = 128 }
+    bls      = { handler = "bls_collector.lambda_handler", timeout = 60, memory = 128 }
+    yfinance = { handler = "yfinance_collector.lambda_handler", timeout = 120, memory = 256 }
+    forex    = { handler = "forex_collector.lambda_handler", timeout = 30, memory = 128 }
   }
 }
 
@@ -63,27 +64,20 @@ resource "aws_lambda_function" "collectors" {
   handler       = each.value.handler
   runtime       = "python3.11"
   timeout       = each.value.timeout
-  memory_size   = each.value.memory  # keep low for cost
+  memory_size   = each.value.memory # keep low for cost
 
   filename         = var.lambda_zip_path
   source_code_hash = filebase64sha256(var.lambda_zip_path)
 
   environment {
     variables = {
-      ENVIRONMENT      = var.environment
-      S3_BUCKET_RAW    = var.s3_bucket_raw
+      ENVIRONMENT   = var.environment
+      S3_BUCKET_RAW = var.s3_bucket_raw
       # API keys NOT here — Lambda fetches from Secrets Manager at runtime
-      SECRETS_ARN      = var.secrets_manager_arns[0]
+      SECRETS_ARN = var.secrets_manager_arns[0]
     }
   }
 
   # Reserved concurrency = 2 per function (cost guard — prevents runaway invocations)
   reserved_concurrent_executions = 2
 }
-
-variable "project"              {}
-variable "environment"          {}
-variable "lambda_zip_path"      {}
-variable "s3_bucket_raw"        {}
-variable "s3_bucket_raw_arn"    { default = "" }
-variable "secrets_manager_arns" { type = list(string) }

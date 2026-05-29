@@ -2,6 +2,7 @@
 Shared AWS helpers — used by all Lambda collectors.
 Credentials come from the IAM execution role (never from env vars or hardcoded).
 """
+
 import json
 import os
 import boto3
