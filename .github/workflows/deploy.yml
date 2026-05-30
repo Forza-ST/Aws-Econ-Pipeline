@@ -39,22 +39,32 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      # Package Lambda functions (zip only changed ones)
+      # Package collector Lambdas + shared utils (handlers import utils.aws_helpers)
       - name: Package Lambda collectors
         run: |
-          cd src/collectors
-          pip install -r requirements.txt -t package/
-          cp *.py package/
-          cd package && zip -r ../../../lambda_collectors.zip . -x "*.pyc" -x "__pycache__/*"
+          mkdir -p build/package/utils
+          pip install -r requirements-lambda.txt -t build/package/
+          cp src/collectors/*.py build/package/
+          cp src/utils/*.py build/package/utils/
+          cd build/package && zip -rq ../../../lambda_collectors.zip .
 
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.7.0"
 
       - name: Terraform Init
+        env:
+          # Override via repo variables TF_STATE_BUCKET / TF_STATE_LOCK_TABLE if needed
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET || 'econ-pipeline-tfstate-dev-967140533377' }}
+          TF_STATE_LOCK_TABLE: ${{ vars.TF_STATE_LOCK_TABLE || 'econ-pipeline-tfstate-lock' }}
         run: |
           cd infrastructure/terraform/environments/${{ github.event.inputs.environment || 'dev' }}
-          terraform init
+          terraform init \
+            -backend-config="bucket=${TF_STATE_BUCKET}" \
+            -backend-config="key=econ-pipeline/${{ github.event.inputs.environment || 'dev' }}/terraform.tfstate" \
+            -backend-config="region=us-east-1" \
+            -backend-config="dynamodb_table=${TF_STATE_LOCK_TABLE}" \
+            -backend-config="encrypt=true"
 
       - name: Terraform Plan
         run: |
