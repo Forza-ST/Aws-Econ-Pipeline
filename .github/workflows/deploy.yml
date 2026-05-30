@@ -39,15 +39,22 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      # Package collector Lambdas + shared utils (handlers import utils.aws_helpers)
-      - name: Package Lambda collectors
+      # Slim zip: boto3 + requests only; heavy deps live in Lambda Layer
+      - name: Package Lambda collectors (slim — no heavy deps)
         run: |
-          mkdir -p build/package/utils
-          pip install -r requirements-lambda.txt -t build/package/
-          cp src/collectors/*.py build/package/
-          cp src/utils/*.py build/package/utils/
-          cd build/package && zip -rq "${GITHUB_WORKSPACE}/lambda_collectors.zip" .
-          ls -lh "${GITHUB_WORKSPACE}/lambda_collectors.zip"
+          mkdir -p lambda_package/utils
+          pip install -r requirements-lambda.txt -t lambda_package/ --quiet
+          cp src/collectors/*.py lambda_package/
+          cp src/utils/*.py lambda_package/utils/
+          cd lambda_package
+          zip -rq "${GITHUB_WORKSPACE}/lambda_collectors.zip" . \
+            -x "*.pyc" \
+            -x "__pycache__/*" \
+            -x "*.dist-info/*" \
+            -x "*.egg-info/*"
+          cd ..
+          echo "Zip size: $(du -sh lambda_collectors.zip | cut -f1)"
+          ls -lh lambda_collectors.zip
 
       - uses: hashicorp/setup-terraform@v3
         with:

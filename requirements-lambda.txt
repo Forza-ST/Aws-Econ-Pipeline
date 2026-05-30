@@ -1,4 +1,3 @@
-# Minimal deps for collector Lambdas (keep zip small)
+# Lightweight deps only — packaged in slim Lambda zip (under 50MB)
 boto3>=1.34.0
 requests>=2.31.0
-yfinance>=0.2.36

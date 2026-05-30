@@ -1,0 +1,5 @@
+# Heavy deps for collectors — must stay under Lambda Layer 250MB unzipped
+# prophet/scipy omitted here (use separate layer or SageMaker for ML jobs)
+pandas>=2.1.0
+yfinance>=0.2.36
+numpy>=1.26.0

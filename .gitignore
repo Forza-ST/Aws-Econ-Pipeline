@@ -86,3 +86,6 @@ configs/great_expectations/uncommitted/
 # ── Build artifacts ───────────────────────────────────────────────────────────
 *.zip
 lambda_packages/
+lambda_layer.zip
+layer_build/
+lambda_package/

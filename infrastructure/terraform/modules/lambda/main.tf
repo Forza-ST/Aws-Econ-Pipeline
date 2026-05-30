@@ -69,6 +69,9 @@ resource "aws_lambda_function" "collectors" {
   filename         = var.lambda_zip_path
   source_code_hash = filebase64sha256(var.lambda_zip_path)
 
+  # Heavy deps (pandas, yfinance, etc.) — published outside Terraform/CI (see requirements-layer.txt)
+  layers = ["arn:aws:lambda:us-east-1:967140533377:layer:econ-pipeline-dev-python-deps:1"]
+
   environment {
     variables = {
       ENVIRONMENT   = var.environment
