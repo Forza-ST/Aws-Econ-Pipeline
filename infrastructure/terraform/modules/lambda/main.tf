@@ -77,7 +77,4 @@ resource "aws_lambda_function" "collectors" {
       SECRETS_ARN = var.secrets_manager_arns[0]
     }
   }
-
-  # Reserved concurrency = 2 per function (cost guard — prevents runaway invocations)
-  reserved_concurrent_executions = 2
 }
