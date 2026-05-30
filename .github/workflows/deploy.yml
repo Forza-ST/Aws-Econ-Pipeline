@@ -46,7 +46,7 @@ jobs:
           pip install -r requirements-lambda.txt -t build/package/
           cp src/collectors/*.py build/package/
           cp src/utils/*.py build/package/utils/
-          cd build/package && zip -rq ../../lambda_collectors.zip .
+          cd build/package && zip -rq "${GITHUB_WORKSPACE}/lambda_collectors.zip" .
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -66,10 +66,15 @@ jobs:
             -backend-config="dynamodb_table=${TF_STATE_LOCK_TABLE}" \
             -backend-config="encrypt=true"
 
+      - name: Verify Lambda package
+        run: |
+          ls -la "${GITHUB_WORKSPACE}/lambda_collectors.zip"
+          unzip -l "${GITHUB_WORKSPACE}/lambda_collectors.zip" | head -20
+
       - name: Terraform Plan
         run: |
           cd infrastructure/terraform/environments/${{ github.event.inputs.environment || 'dev' }}
-          terraform plan -out=tfplan -var="lambda_zip_path=../../../../lambda_collectors.zip"
+          terraform plan -out=tfplan -var="lambda_zip_path=${GITHUB_WORKSPACE}/lambda_collectors.zip"
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
