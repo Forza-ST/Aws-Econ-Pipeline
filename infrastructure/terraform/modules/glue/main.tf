@@ -60,8 +60,7 @@ resource "aws_glue_job" "silver_transform" {
     "--job-language" = "python"
   }
 
-  glue_version = "3.0"
-  max_capacity = "0.0625" # 1/16 DPU — minimum for Python Shell (string required)
+  max_capacity = 0.0625 # 1/16 DPU — minimum for Python Shell
   timeout      = 60
 }
 

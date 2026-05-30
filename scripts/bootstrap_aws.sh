@@ -88,6 +88,18 @@ aws iam attach-role-policy \
 aws iam attach-role-policy \
   --role-name "$ROLE_NAME" \
   --policy-arn "arn:aws:iam::aws:policy/AWSGlueConsoleFullAccess" 2>/dev/null || true
+aws iam attach-role-policy \
+  --role-name "$ROLE_NAME" \
+  --policy-arn "arn:aws:iam::aws:policy/IAMFullAccess" 2>/dev/null || true
+aws iam attach-role-policy \
+  --role-name "$ROLE_NAME" \
+  --policy-arn "arn:aws:iam::aws:policy/SecretsManagerReadWrite" 2>/dev/null || true
+aws iam attach-role-policy \
+  --role-name "$ROLE_NAME" \
+  --policy-arn "arn:aws:iam::aws:policy/AmazonEventBridgeFullAccess" 2>/dev/null || true
+aws iam attach-role-policy \
+  --role-name "$ROLE_NAME" \
+  --policy-arn "arn:aws:iam::aws:policy/AmazonAthenaFullAccess" 2>/dev/null || true
 
 ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}"
 
