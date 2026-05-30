@@ -13,6 +13,11 @@ resource "aws_iam_role" "glue_etl" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "glue_service" {
+  role       = aws_iam_role.glue_etl.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
 resource "aws_iam_role_policy" "glue_s3" {
   name = "glue-s3-access"
   role = aws_iam_role.glue_etl.id
@@ -35,7 +40,8 @@ resource "aws_iam_role_policy" "glue_s3" {
 }
 
 resource "aws_glue_catalog_database" "econ" {
-  name = "${var.project}_${var.environment}_db"
+  # Glue catalog names: lowercase letters, numbers, underscores only
+  name = replace("${var.project}_${var.environment}_db", "-", "_")
 }
 
 resource "aws_glue_job" "silver_transform" {
@@ -54,10 +60,9 @@ resource "aws_glue_job" "silver_transform" {
     "--job-language" = "python"
   }
 
-  glue_version    = "3.0"
-  max_capacity    = 0.0625 # 1/16 DPU — minimum for Python Shell
-  execution_class = "STANDARD"
-  timeout         = 60
+  glue_version = "3.0"
+  max_capacity = "0.0625" # 1/16 DPU — minimum for Python Shell (string required)
+  timeout      = 60
 }
 
 resource "aws_glue_crawler" "raw_crawler" {

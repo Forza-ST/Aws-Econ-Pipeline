@@ -60,7 +60,14 @@ module "glue" {
   source      = "../../modules/glue"
   environment = var.environment
   project     = var.project
-  s3_buckets  = module.data_lake
+  s3_buckets = {
+    raw_bucket_name     = module.data_lake.raw_bucket_name
+    clean_bucket_name   = module.data_lake.clean_bucket_name
+    curated_bucket_name = module.data_lake.curated_bucket_name
+    raw_bucket_arn      = module.data_lake.raw_bucket_arn
+    clean_bucket_arn    = module.data_lake.clean_bucket_arn
+    curated_bucket_arn  = module.data_lake.curated_bucket_arn
+  }
 }
 
 # ── Secrets Manager — stores all API keys ────────────────────────────────

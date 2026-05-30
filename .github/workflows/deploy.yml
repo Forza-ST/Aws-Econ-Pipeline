@@ -46,7 +46,7 @@ jobs:
           pip install -r requirements-lambda.txt -t build/package/
           cp src/collectors/*.py build/package/
           cp src/utils/*.py build/package/utils/
-          cd build/package && zip -rq ../../../lambda_collectors.zip .
+          cd build/package && zip -rq ../../lambda_collectors.zip .
 
       - uses: hashicorp/setup-terraform@v3
         with:
