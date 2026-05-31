@@ -23,20 +23,26 @@ logger = logging.getLogger(__name__)
 FORECAST_SERIES = {
     "fred/CPIAUCSL": {"horizon_months": 6, "name": "CPI"},
     "fred/UNRATE": {"horizon_months": 3, "name": "Unemployment Rate"},
-    "market/CLF": {"horizon_months": 1, "name": "WTI Oil"},
-    "market/GCF": {"horizon_months": 3, "name": "Gold"},
+    "market/CL_F": {"horizon_months": 1, "name": "WTI Oil"},
+    "market/GC_F": {"horizon_months": 3, "name": "Gold"},
 }
 
 
 def load_series_as_prophet_df(bucket: str, series_path: str) -> pd.DataFrame:
     """Prophet requires columns: ds (datetime), y (float)."""
     s3 = boto3.client("s3")
-    prefix = f"clean/{series_path}"
+    zone, series_id = series_path.split("/", 1)
+    prefix = f"clean/{zone}/"
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
     if not resp.get("Contents"):
         raise FileNotFoundError(f"No data: s3://{bucket}/{prefix}")
 
-    latest_key = sorted(resp["Contents"], key=lambda x: x["LastModified"])[-1]["Key"]
+    suffix = f"/{series_id}.parquet"
+    matches = [o for o in resp["Contents"] if o["Key"].endswith(suffix)]
+    if not matches:
+        raise FileNotFoundError(f"No parquet matching *{suffix} under s3://{bucket}/{prefix}")
+
+    latest_key = sorted(matches, key=lambda x: x["LastModified"])[-1]["Key"]
     obj = s3.get_object(Bucket=bucket, Key=latest_key)
     df = pd.read_parquet(BytesIO(obj["Body"].read()))
 
@@ -150,3 +156,10 @@ def lambda_handler(event: dict, context) -> dict:
         "errors": len(errors),
         "results": results,
     }
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    import json
+
+    print(json.dumps(lambda_handler({}, None), indent=2))

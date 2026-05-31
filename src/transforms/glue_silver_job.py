@@ -116,7 +116,7 @@ def transform_market(raw: dict) -> pd.DataFrame:
     )
     df["symbol"] = raw.get("data", {}).get("symbol", "")
     df["source"] = "yfinance"
-    df["date"] = pd.to_datetime(df["date"]).dt.date
+    df["date"] = pd.to_datetime(df["date"], utc=True).dt.tz_localize(None).dt.date
     return df[["symbol", "date", "open", "high", "low", "close", "volume", "source"]]
 
 
