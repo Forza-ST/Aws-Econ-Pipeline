@@ -83,14 +83,19 @@ def transform_fred(raw: dict) -> pd.DataFrame:
             continue
         rows.append(
             {
-                "series_id": raw.get("data", {}).get("series_id", ""),
+                "series_id": raw.get("series_id")
+                or raw.get("data", {}).get("id", ""),
                 "observation_date": obs["date"],
                 "value": float(obs["value"]),
                 "vintage_date": raw.get("ingested_at", "")[:10],
                 "source": "fred",
             }
         )
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df["observation_date"] = pd.to_datetime(df["observation_date"]).dt.date
+        df["vintage_date"] = pd.to_datetime(df["vintage_date"]).dt.date
+    return df
 
 
 def transform_market(raw: dict) -> pd.DataFrame:
