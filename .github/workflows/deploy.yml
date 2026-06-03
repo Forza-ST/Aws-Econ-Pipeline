@@ -56,6 +56,20 @@ jobs:
           echo "Zip size: $(du -sh lambda_collectors.zip | cut -f1)"
           ls -lh lambda_collectors.zip
 
+      - name: Package dashboard API Lambda (slim — Athena queries only)
+        run: |
+          mkdir -p api_package
+          pip install -r requirements-lambda.txt -t api_package/ --quiet
+          cp src/api/dashboard_api.py api_package/
+          cd api_package
+          zip -rq "${GITHUB_WORKSPACE}/lambda_api.zip" . \
+            -x "*.pyc" \
+            -x "__pycache__/*" \
+            -x "*.dist-info/*"
+          cd ..
+          echo "API zip size: $(du -sh lambda_api.zip | cut -f1)"
+          ls -lh lambda_api.zip
+
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.7.0"
@@ -77,13 +91,15 @@ jobs:
       - name: Verify Lambda package
         run: |
           ls -la "${GITHUB_WORKSPACE}/lambda_collectors.zip"
+          ls -la "${GITHUB_WORKSPACE}/lambda_api.zip"
           unzip -l "${GITHUB_WORKSPACE}/lambda_collectors.zip" | head -20
 
       - name: Terraform Plan
         run: |
           cd infrastructure/terraform/environments/${{ github.event.inputs.environment || 'dev' }}
           terraform plan -no-color -refresh=false -out=tfplan \
-            -var="lambda_zip_path=${GITHUB_WORKSPACE}/lambda_collectors.zip"
+            -var="lambda_zip_path=${GITHUB_WORKSPACE}/lambda_collectors.zip" \
+            -var="api_zip_path=${GITHUB_WORKSPACE}/lambda_api.zip"
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'

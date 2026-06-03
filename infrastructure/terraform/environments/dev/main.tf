@@ -114,6 +114,27 @@ resource "aws_athena_workgroup" "analysts" {
   }
 }
 
+# ── Dashboard API (HTTP API Gateway + Lambda) ─────────────────────────────
+module "dashboard_api" {
+  source                = "../../modules/api"
+  environment           = var.environment
+  project               = var.project
+  api_zip_path          = var.api_zip_path
+  s3_bucket_clean       = module.data_lake.clean_bucket_name
+  s3_bucket_curated     = module.data_lake.curated_bucket_name
+  s3_bucket_raw         = module.data_lake.raw_bucket_name
+  s3_bucket_clean_arn   = module.data_lake.clean_bucket_arn
+  s3_bucket_curated_arn = module.data_lake.curated_bucket_arn
+  s3_bucket_raw_arn     = module.data_lake.raw_bucket_arn
+  athena_workgroup      = aws_athena_workgroup.analysts.name
+  glue_database_name    = "econ_db"
+}
+
+output "dashboard_api_url" {
+  value       = module.dashboard_api.api_url
+  description = "Base URL for the React dashboard (append /summary, /correlations, etc.)"
+}
+
 # ── NOTE: Redshift OMITTED for dev ───────────────────────────────────────
 # Redshift dc2.large = ~$0.25/hr = $180/month minimum
 # For demo: use Athena + S3 Parquet instead (pay per query, ~$5/TB scanned)

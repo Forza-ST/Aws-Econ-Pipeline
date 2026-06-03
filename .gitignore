@@ -22,7 +22,18 @@ backend.hcl
 .aws/
 aws-exports.js
 
-# ── Python ───────────────────────────────────────────────────────────────────
+# ── Node / React dashboard ───────────────────────────────────────────────────
+web/node_modules/
+web/dist/
+
+# ── Local Lambda build artifacts ─────────────────────────────────────────────
+api_build/
+api_slim/
+lambda_api.zip
+lambda_collectors.zip
+**/tfplan
+response_*.json
+
 __pycache__/
 *.py[cod]
 *$py.class
