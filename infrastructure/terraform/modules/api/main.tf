@@ -42,13 +42,13 @@ resource "aws_iam_role_policy" "api_access" {
         Resource = "*"
       },
       {
-        Effect = "Allow"
-        Action = ["glue:GetDatabase", "glue:GetTable", "glue:GetPartitions"]
+        Effect   = "Allow"
+        Action   = ["glue:GetDatabase", "glue:GetTable", "glue:GetPartitions"]
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "s3:GetBucketLocation",
           "s3:GetObject",
           "s3:ListBucket",
