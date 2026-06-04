@@ -2,7 +2,7 @@
 
 > **Production-grade AWS data architecture** — ingesting 6 public economic APIs,
 > building a 3-zone S3 data lake, running ML forecasting and cross-asset correlation,
-> and serving analysts via Athena + QuickSight. Estimated cost: **~$2.50/month** for demo.
+> and serving a live React dashboard via API Gateway + CloudFront. Estimated cost: **~$2.50/month** for demo.
 
 ---
 
@@ -170,6 +170,21 @@ terraform apply
 ```
 
 See [SETUP.md](./SETUP.md) for the complete implementation guide.
+
+---
+
+## Live Demo
+
+| Resource | URL |
+|----------|-----|
+| **Dashboard** | https://d3cwh83gvj5pif.cloudfront.net |
+| **API — Summary** | https://drqfs6zj6d.execute-api.us-east-1.amazonaws.com/summary |
+| **API — CPI series** | https://drqfs6zj6d.execute-api.us-east-1.amazonaws.com/indicators/CPIAUCSL |
+| **API — Correlations** | https://drqfs6zj6d.execute-api.us-east-1.amazonaws.com/correlations |
+| **API — Forecasts** | https://drqfs6zj6d.execute-api.us-east-1.amazonaws.com/forecasts/cpi |
+
+> First load takes 30–60 seconds — Athena queries run on cold start against live S3 Parquet.
+> Data refreshes daily. Current snapshot: CPI **3.95% YoY** · Unemployment **4.3%** · Fed Funds **3.64%**
 
 ---
 

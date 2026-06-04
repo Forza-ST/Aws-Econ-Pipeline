@@ -83,8 +83,7 @@ def transform_fred(raw: dict) -> pd.DataFrame:
             continue
         rows.append(
             {
-                "series_id": raw.get("series_id")
-                or raw.get("data", {}).get("id", ""),
+                "series_id": raw.get("series_id") or raw.get("data", {}).get("id", ""),
                 "observation_date": obs["date"],
                 "value": float(obs["value"]),
                 "vintage_date": raw.get("ingested_at", "")[:10],

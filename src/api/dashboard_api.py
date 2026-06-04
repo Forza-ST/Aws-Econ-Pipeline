@@ -58,7 +58,6 @@ def _athena() -> Any:
 def run_query(sql: str) -> list[dict]:
     workgroup = os.environ["ATHENA_WORKGROUP"]
     database = os.environ["ATHENA_DATABASE"]
-    output = os.environ["ATHENA_OUTPUT"]
 
     client = _athena()
     resp = client.start_query_execution(
@@ -69,7 +68,9 @@ def run_query(sql: str) -> list[dict]:
     qid = resp["QueryExecutionId"]
 
     for _ in range(60):
-        status = client.get_query_execution(QueryExecutionId=qid)["QueryExecution"]["Status"]
+        status = client.get_query_execution(QueryExecutionId=qid)["QueryExecution"][
+            "Status"
+        ]
         state = status["State"]
         if state == "SUCCEEDED":
             break
@@ -101,35 +102,28 @@ def _num(row: dict, key: str, default: float = 0.0) -> float:
 
 
 def handle_summary() -> dict:
-    cpi_rows = run_query(
-        """
+    cpi_rows = run_query("""
         SELECT observation_date, value AS cpi_index,
                (value / LAG(value, 12) OVER (ORDER BY observation_date) - 1) * 100 AS yoy_pct
         FROM fred_indicators
         WHERE series_id = 'CPIAUCSL'
         ORDER BY observation_date DESC
         LIMIT 1
-        """
-    )
-    unrate = run_query(
-        """
+        """)
+    unrate = run_query("""
         SELECT observation_date, value FROM fred_indicators
         WHERE series_id = 'UNRATE' ORDER BY observation_date DESC LIMIT 1
-        """
-    )
-    fed = run_query(
-        """
+        """)
+    fed = run_query("""
         SELECT observation_date, value FROM fred_indicators
         WHERE series_id = 'FEDFUNDS' ORDER BY observation_date DESC LIMIT 1
-        """
-    )
+        """)
     corr_count = run_query("SELECT COUNT(*) AS n FROM correlation_matrix")
     fc_count = [{"n": "4"}]  # cpi, unemployment, wti_oil, gold forecast tables
 
     commodities = []
     for symbol, label in COMMODITY_SYMBOLS.items():
-        rows = run_query(
-            f"""
+        rows = run_query(f"""
             WITH ranked AS (
               SELECT date, close,
                      LAG(close) OVER (ORDER BY date) AS prev_close
@@ -138,8 +132,7 @@ def handle_summary() -> dict:
             SELECT date, close,
                    CASE WHEN prev_close > 0 THEN (close - prev_close) / prev_close * 100 ELSE 0 END AS change_pct
             FROM ranked ORDER BY date DESC LIMIT 1
-            """
-        )
+            """)
         if rows:
             r = rows[0]
             commodities.append(
@@ -179,16 +172,14 @@ def handle_summary() -> dict:
 
 def handle_indicators(series_id: str) -> dict:
     sid = series_id.upper().replace("'", "")
-    rows = run_query(
-        f"""
+    rows = run_query(f"""
         SELECT observation_date, value,
                (value / LAG(value, 12) OVER (ORDER BY observation_date) - 1) * 100 AS yoy_pct
         FROM fred_indicators
         WHERE series_id = '{sid}'
         ORDER BY observation_date DESC
         LIMIT 36
-        """
-    )
+        """)
     for r in rows:
         r["value"] = round(_num(r, "value"), 4)
         if r.get("yoy_pct"):
@@ -197,17 +188,17 @@ def handle_indicators(series_id: str) -> dict:
 
 
 def handle_correlations() -> dict:
-    rows = run_query(
-        """
+    rows = run_query("""
         SELECT pair_name, series1, series2, pearson_90d, pearson_full, n_observations
         FROM correlation_matrix
         ORDER BY pair_name
-        """
-    )
+        """)
     for r in rows:
         for k in ("pearson_90d", "pearson_full", "n_observations"):
             if r.get(k) not in (None, ""):
-                r[k] = round(float(r[k]), 4) if k != "n_observations" else int(float(r[k]))
+                r[k] = (
+                    round(float(r[k]), 4) if k != "n_observations" else int(float(r[k]))
+                )
     return {"pairs": rows}
 
 
@@ -215,24 +206,20 @@ def handle_forecast(name: str) -> dict:
     table = FORECAST_TABLES.get(name.lower())
     if not table:
         raise ValueError(f"Unknown forecast: {name}. Valid: {list(FORECAST_TABLES)}")
-    rows = run_query(
-        f"""
+    rows = run_query(f"""
         SELECT ds, yhat, yhat_lower, yhat_upper
         FROM {table}
         WHERE is_forecast = true
         ORDER BY ds
         LIMIT 120
-        """
-    )
+        """)
     if not rows:
-        rows = run_query(
-            f"""
+        rows = run_query(f"""
             SELECT ds, yhat, yhat_lower, yhat_upper
             FROM {table}
             ORDER BY ds DESC
             LIMIT 90
-            """
-        )
+            """)
         rows = list(reversed(rows))
     for r in rows:
         r["yhat"] = round(_num(r, "yhat"), 2)
@@ -244,29 +231,25 @@ def handle_forecast(name: str) -> dict:
 def handle_commodities() -> dict:
     items = []
     for symbol, label in COMMODITY_SYMBOLS.items():
-        latest = run_query(
-            f"""
+        latest = run_query(f"""
             SELECT date, close, volume FROM market_prices
             WHERE symbol = '{symbol}' ORDER BY date DESC LIMIT 1
-            """
-        )
-        history = run_query(
-            f"""
+            """)
+        history = run_query(f"""
             SELECT date, close, volume FROM market_prices
             WHERE symbol = '{symbol}' ORDER BY date DESC LIMIT 60
-            """
-        )
+            """)
         if not latest:
             continue
-        l = latest[0]
+        latest_row = latest[0]
         items.append(
             {
                 "symbol": symbol,
                 "label": label,
                 "latest": {
-                    "date": l["date"],
-                    "close": round(_num(l, "close"), 2),
-                    "volume": int(_num(l, "volume")),
+                    "date": latest_row["date"],
+                    "close": round(_num(latest_row, "close"), 2),
+                    "volume": int(_num(latest_row, "volume")),
                 },
                 "history": [
                     {
@@ -306,7 +289,9 @@ def _route(event: dict) -> dict:
 
 
 def lambda_handler(event: dict, context) -> dict:
-    method = event.get("httpMethod") or event.get("requestContext", {}).get("http", {}).get("method")
+    method = event.get("httpMethod") or event.get("requestContext", {}).get(
+        "http", {}
+    ).get("method")
     if method == "OPTIONS":
         return _response(200, {"ok": True})
 

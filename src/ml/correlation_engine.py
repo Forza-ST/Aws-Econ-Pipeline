@@ -46,7 +46,9 @@ def load_series(bucket: str, series_path: str) -> pd.Series:
     suffix = f"/{series_id}.parquet"
     matches = [o for o in resp["Contents"] if o["Key"].endswith(suffix)]
     if not matches:
-        raise FileNotFoundError(f"No parquet matching *{suffix} under s3://{bucket}/{prefix}")
+        raise FileNotFoundError(
+            f"No parquet matching *{suffix} under s3://{bucket}/{prefix}"
+        )
 
     latest_key = sorted(matches, key=lambda x: x["LastModified"])[-1]["Key"]
     obj = s3.get_object(Bucket=bucket, Key=latest_key)
